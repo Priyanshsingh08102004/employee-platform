@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Apply · Employee Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-body">
+  <main class="auth-wrap" style="max-width:480px;">
+    <form class="auth-card" id="applyForm" novalidate>
+      <div class="auth-logo">EM</div>
+      <h1>Apply to join</h1>
+      <p class="sub">Submit your details. A manager will review, correct if needed, and confirm them. You'll get an email with the decision.</p>
+
+      <div id="applyMsg" class="auth-msg" hidden></div>
+
+      <label>Full name<input id="name" required></label>
+      <label>Email<input id="email" type="email" required></label>
+      <label>Phone<input id="phone" type="tel"></label>
+      <div class="two">
+        <label>Department<select id="departmentId" required></select></label>
+        <label>Desired job title<input id="jobTitle" required></label>
+      </div>
+      <label>Expected salary (INR per year)<input id="expectedSalary" type="number" min="1" step="1000" required></label>
+      <label>Resume (optional)<input id="resume" type="file" accept=".pdf,.doc,.docx"></label>
+
+      <button class="btn primary full" type="submit">Submit application</button>
+      <p class="auth-switch">Already have an account? <a href="/login.html">Sign in</a></p>
+    </form>
+  </main>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="apply.js"></script>
+  <script src="chatbot.js"></script>
+</body>
+</html>

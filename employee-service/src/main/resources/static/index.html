@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Employee Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>Employee Manager</h1>
+      <p class="sub" id="count">Loading…</p>
+    </div>
+    <div class="header-actions">
+      <a class="btn" id="exportBtn" href="/api/employees/export/csv">Export CSV</a>
+      <a class="btn" id="reviewLink" href="/review.html" hidden>Review Applications</a>
+      <a class="btn" id="payrollLink" href="/payroll.html" hidden>Payroll</a>
+      <button class="btn primary" id="addBtn">Add employee</button>
+      <form method="POST" action="/logout"><button class="btn" type="submit">Sign out</button></form>
+    </div>
+  </header>
+
+  <main>
+    <div class="toolbar">
+      <input type="search" id="search" placeholder="Search by name, email, department or title" aria-label="Search employees">
+      <select id="departmentFilter" aria-label="Filter by department">
+        <option value="">All departments</option>
+      </select>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th></th><th>Name</th><th>Department</th><th>Job title</th>
+            <th class="num">Salary</th><th>Joined</th><th class="actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div id="empty" class="empty" hidden>
+        <p>No employees found.</p>
+        <button class="btn" id="emptyAdd">Add an employee</button>
+      </div>
+    </div>
+
+    <div class="pagination">
+      <button class="btn small" id="prevPage">Previous</button>
+      <span id="pageInfo">Page 1</span>
+      <button class="btn small" id="nextPage">Next</button>
+    </div>
+  </main>
+
+  <dialog id="formDialog">
+    <form id="form" novalidate>
+      <h2 id="formTitle">Add employee</h2>
+      <input type="hidden" id="id">
+      <label>Full name<input id="name" required><span class="err" data-for="name"></span></label>
+      <label>Email<input id="email" type="email" required><span class="err" data-for="email"></span></label>
+      <div class="two">
+        <label>Department
+          <select id="departmentId" required></select>
+          <span class="err" data-for="departmentId"></span>
+        </label>
+        <label>Job title<input id="jobTitle" required><span class="err" data-for="jobTitle"></span></label>
+      </div>
+      <div class="two">
+        <label>Salary (INR per year)<input id="salary" type="number" min="1" step="1000" required><span class="err" data-for="salary"></span></label>
+        <label>Join date<input id="joinDate" type="date"><span class="err" data-for="joinDate"></span></label>
+      </div>
+      <label>Profile photo (optional)
+        <input id="photo" type="file" accept="image/*">
+      </label>
+      <p class="err form-err" id="formErr"></p>
+      <div class="buttons">
+        <button type="button" class="btn" id="cancelBtn">Cancel</button>
+        <button type="submit" class="btn primary" id="saveBtn">Save employee</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="confirmDialog">
+    <h2>Delete employee?</h2>
+    <p id="confirmText"></p>
+    <div class="buttons">
+      <button class="btn" id="confirmNo">Keep</button>
+      <button class="btn danger" id="confirmYes">Delete employee</button>
+    </div>
+  </dialog>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+  <script src="chatbot.js"></script>
+</body>
+</html>

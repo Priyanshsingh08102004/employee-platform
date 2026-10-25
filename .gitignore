@@ -1,0 +1,10 @@
+target/
+bin/
+obj/
+data/
+uploads/
+backups/
+*.db
+.env
+.idea/
+.vscode/

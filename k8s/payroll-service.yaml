@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: payroll-data
+  namespace: employee-platform
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payroll-service
+  namespace: employee-platform
+spec:
+  replicas: 1                 # SQLite file database -> single writer, same reasoning as employee-service
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: payroll-service
+  template:
+    metadata:
+      labels:
+        app: payroll-service
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1654       # the "app" user built into the official .NET 8 images
+        fsGroup: 1654
+      containers:
+        - name: payroll-service
+          image: payroll-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5100
+          env:
+            - name: Internal__ApiKey
+              valueFrom:
+                secretKeyRef:
+                  name: platform-secrets
+                  key: INTERNAL_API_KEY
+            - name: EmployeeService__BaseUrl
+              value: http://employee-service:8080
+            - name: ConnectionStrings__Payroll
+              value: Data Source=/data/payroll.db
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          readinessProbe:
+            httpGet: {path: /health, port: 5100}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: {path: /health, port: 5100}
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: 500m, memory: 384Mi}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: payroll-data}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payroll-service
+  namespace: employee-platform
+spec:
+  selector:
+    app: payroll-service
+  ports:
+    - port: 5100
+      targetPort: 5100
+---
+# Only the Java service may call the payroll service. (Enforced when the cluster's network plugin
+# supports NetworkPolicy; harmlessly ignored otherwise.)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: payroll-only-from-employee-service
+  namespace: employee-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: payroll-service
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: employee-service
+      ports:
+        - port: 5100

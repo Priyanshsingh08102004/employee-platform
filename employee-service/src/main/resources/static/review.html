@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Review Applications · Employee Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>Review Applications</h1>
+      <p class="sub" id="count">Loading…</p>
+    </div>
+    <div class="header-actions">
+      <a class="btn" href="/index.html">Back to dashboard</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="toolbar">
+      <select id="statusFilter">
+        <option value="PENDING">Pending</option>
+        <option value="APPROVED">Approved</option>
+        <option value="REJECTED">Rejected</option>
+      </select>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th><th>Email</th><th>Department</th><th>Job title</th>
+            <th class="num">Expected salary</th><th>Resume</th><th class="actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div id="empty" class="empty" hidden><p>No applications here.</p></div>
+    </div>
+  </main>
+
+  <dialog id="editDialog">
+    <form id="editForm" novalidate>
+      <h2>Correct details before approving</h2>
+      <input type="hidden" id="editId">
+      <label>Full name<input id="editName" required></label>
+      <label>Email<input id="editEmail" type="email" required></label>
+      <label>Phone<input id="editPhone"></label>
+      <div class="two">
+        <label>Department<select id="editDepartmentId" required></select></label>
+        <label>Job title<input id="editJobTitle" required></label>
+      </div>
+      <label>Expected salary<input id="editSalary" type="number" min="1" step="1000" required></label>
+      <div class="buttons">
+        <button type="button" class="btn" id="editCancel">Cancel</button>
+        <button type="submit" class="btn primary">Save correction</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="rejectDialog">
+    <h2>Reject application</h2>
+    <label>Reason (included in the email sent to the applicant)
+      <textarea id="rejectReason" rows="3" style="width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);"></textarea>
+    </label>
+    <div class="buttons">
+      <button class="btn" id="rejectCancel">Cancel</button>
+      <button class="btn danger" id="rejectConfirm">Reject</button>
+    </div>
+  </dialog>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="review.js"></script>
+  <script src="chatbot.js"></script>
+</body>
+</html>

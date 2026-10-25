@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Payroll · Employee Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>Payroll</h1>
+      <p class="sub">Calculated by the separate .NET payroll service</p>
+    </div>
+    <div class="header-actions">
+      <a class="btn" href="/index.html">Back to dashboard</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="toolbar">
+      <input type="month" id="month" aria-label="Payroll month" style="width:auto;">
+      <button class="btn primary" id="runBtn">Run payroll for this month</button>
+    </div>
+    <div id="msg" class="auth-msg" hidden></div>
+
+    <h2>Previous runs</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Month</th><th class="num">Employees</th><th class="num">Total net pay</th><th>Created (UTC)</th><th class="actions">Details</th></tr></thead>
+        <tbody id="runsBody"></tbody>
+      </table>
+      <div id="runsEmpty" class="empty" hidden><p>No payroll has been run yet.</p></div>
+    </div>
+
+    <div id="detail" hidden>
+      <h2 id="detailTitle" style="margin-top:28px;"></h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Employee</th><th>Department</th><th class="num">Monthly gross</th><th class="num">Provident fund</th><th class="num">Income tax</th><th class="num">Net pay</th></tr></thead>
+          <tbody id="detailBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="payroll.js"></script>
+  <script src="chatbot.js"></script>
+</body>
+</html>

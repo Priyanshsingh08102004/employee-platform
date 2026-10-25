@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in · Employee Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-body">
+  <main class="auth-wrap">
+    <form class="auth-card" method="POST" action="/login">
+      <div class="auth-logo">EM</div>
+      <h1>Welcome back</h1>
+      <p class="sub">Sign in to manage your employee records.</p>
+
+      <div id="authMsg" class="auth-msg" hidden></div>
+
+      <label>Username
+        <input name="username" type="text" required autofocus autocomplete="username">
+      </label>
+      <label>Password
+        <input name="password" type="password" required autocomplete="current-password">
+      </label>
+
+      <button class="btn primary full" type="submit">Sign in</button>
+
+      <p class="auth-hint">
+        Try it out —<br>
+        Admin: <code>admin</code> / <code>admin123</code> (full access)<br>
+        Staff: <code>manager</code> / <code>manager123</code> (view/add/edit only)
+      </p>
+      <p class="auth-switch">No account? <a href="/register.html">Create one</a></p>
+      <p class="auth-switch">Applying for a job instead? <a href="/apply.html">Submit your details</a></p>
+    </form>
+  </main>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const box = document.getElementById('authMsg');
+    if (params.has('error')) {
+      box.textContent = 'Incorrect username or password. Please try again.';
+      box.hidden = false;
+    } else if (params.has('logout')) {
+      box.textContent = 'You have been signed out.';
+      box.className = 'auth-msg info';
+      box.hidden = false;
+    } else if (params.has('registered')) {
+      box.textContent = 'Account created. You can sign in now.';
+      box.className = 'auth-msg info';
+      box.hidden = false;
+    }
+  </script>
+  <script src="chatbot.js"></script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: employee-data
+  namespace: employee-platform
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: employee-uploads
+  namespace: employee-platform
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: employee-service
+  namespace: employee-platform
+spec:
+  # One replica on purpose: the H2 file database allows a single writer. Scaling out needs a
+  # shared database (PostgreSQL/MySQL) first - a good "what would you change for production" answer.
+  replicas: 1
+  strategy:
+    type: Recreate            # a ReadWriteOnce volume can't be mounted by old and new pods at once
+  selector:
+    matchLabels:
+      app: employee-service
+  template:
+    metadata:
+      labels:
+        app: employee-service
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+        - name: employee-service
+          image: employee-service:latest      # build/load locally, or use ghcr.io/<owner>/employee-service
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: INTERNAL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: platform-secrets
+                  key: INTERNAL_API_KEY
+            - name: PAYROLL_BASE_URL
+              value: http://payroll-service:5100
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+            - name: uploads
+              mountPath: /app/uploads
+          readinessProbe:                      # "ready for traffic?" - gates the Service
+            httpGet: {path: /actuator/health, port: 8080}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:                       # "still alive?" - failure restarts the container
+            httpGet: {path: /actuator/health, port: 8080}
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          resources:
+            requests: {cpu: 250m, memory: 384Mi}
+            limits: {cpu: "1", memory: 768Mi}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: employee-data}
+        - name: uploads
+          persistentVolumeClaim: {claimName: employee-uploads}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: employee-service
+  namespace: employee-platform
+spec:
+  selector:
+    app: employee-service
+  ports:
+    - port: 8080
+      targetPort: 8080

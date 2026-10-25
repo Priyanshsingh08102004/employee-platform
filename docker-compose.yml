@@ -1,0 +1,47 @@
+# Runs the whole platform with one command:   docker compose up --build
+name: employee-platform
+
+services:
+  employee-service:                       # Java / Spring Boot - the ONLY service exposed to users
+    build: ./employee-service
+    ports:
+      - "8080:8080"
+    environment:
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-shared-secret}
+      PAYROLL_BASE_URL: http://payroll-service:5100       # service name = DNS name on the compose network
+    volumes:
+      - employee-data:/app/data           # H2 database file survives container restarts
+      - employee-uploads:/app/uploads     # photos + resumes survive too
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    restart: unless-stopped
+
+  payroll-service:                        # .NET 8 / ASP.NET Core
+    build: ./payroll-service
+    ports:
+      - "127.0.0.1:5100:5100"             # reachable from YOUR machine only (Swagger/debugging), not the network
+    environment:
+      Internal__ApiKey: ${INTERNAL_API_KEY:-dev-shared-secret}       # "__" maps to "Internal:ApiKey" in .NET config
+      EmployeeService__BaseUrl: http://employee-service:8080
+      ConnectionStrings__Payroll: Data Source=/data/payroll.db
+    volumes:
+      - payroll-data:/data
+    depends_on:
+      employee-service:
+        condition: service_healthy
+    healthcheck:                          # TCP-level check: the aspnet image ships without curl/wget
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/5100"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+volumes:
+  employee-data:
+  employee-uploads:
+  payroll-data:

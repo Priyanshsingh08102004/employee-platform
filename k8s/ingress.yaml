@@ -1,0 +1,21 @@
+# Public entry point. Only the Java service is exposed - payroll stays internal to the cluster.
+# Requires an ingress controller (e.g. ingress-nginx). For a local test, add
+# "127.0.0.1 employee.local" to your hosts file.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: employee-platform
+  namespace: employee-platform
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: employee.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: employee-service
+                port:
+                  number: 8080
