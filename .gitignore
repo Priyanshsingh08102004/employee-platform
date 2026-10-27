@@ -1,10 +1,14 @@
 target/
 bin/
 obj/
-data/
+/data/
 uploads/
 backups/
 *.db
 .env
 .idea/
 .vscode/
+
+/employee-service/data/
+/employee-service/uploads/
+.github/modernize/
