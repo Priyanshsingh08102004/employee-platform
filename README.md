@@ -78,14 +78,25 @@ Accounts: `admin / admin123` (ADMIN) and `manager / manager123` (USER, no payrol
 
 Run the scripts with Git Bash or WSL on Windows (`.gitattributes` keeps them on LF line endings).
 
-## Kubernetes (local, e.g. minikube or kind)
-    docker build -t employee-service:latest ./employee-service
-    docker build -t payroll-service:latest ./payroll-service
-    # load the images into your cluster (minikube image load ... / kind load docker-image ...)
+## Kubernetes (tested on Docker Desktop's built-in Kubernetes)
+Enable it in Docker Desktop under Settings, Kubernetes, Enable Kubernetes. Then, from the
+repository root in PowerShell, deploy the images the CI pipeline publishes to GitHub Container Registry:
+
+    kubectl config use-context docker-desktop
     kubectl apply -f k8s/namespace.yaml
-    kubectl -n employee-platform create secret generic platform-secrets \
-        --from-literal=INTERNAL_API_KEY="$(openssl rand -hex 32)"
-    kubectl apply -f k8s/employee-service.yaml -f k8s/payroll-service.yaml -f k8s/ingress.yaml
+    kubectl -n employee-platform create secret generic platform-secrets --from-literal=INTERNAL_API_KEY=any-long-random-text
+    (Get-Content k8s/employee-service.yaml) -replace 'image: employee-service:latest','image: ghcr.io/priyanshsingh08102004/employee-service:latest' | kubectl apply -f -
+    (Get-Content k8s/payroll-service.yaml) -replace 'image: payroll-service:latest','image: ghcr.io/priyanshsingh08102004/payroll-service:latest' | kubectl apply -f -
+    kubectl -n employee-platform get pods
+    kubectl -n employee-platform port-forward svc/employee-service 8080:8080
+
+Then open http://localhost:8080 and sign in as `admin` / `admin123`. On Linux or macOS, swap the
+image name with `sed` instead of `Get-Content ... -replace`.
+
+`k8s/ingress.yaml` is optional and needs an ingress controller, so the port-forward above is the
+simplest way in. The payroll service has no external address: it is reachable only from the Java
+service inside the cluster, and its calls are protected by the shared API key stored in the Secret.
+To remove everything: `kubectl delete namespace employee-platform`.
 
 ## Honest limitations (good to say out loud)
 - Each service runs **one replica** because H2 and SQLite are single-writer file databases.
